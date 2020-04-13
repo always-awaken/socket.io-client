@@ -7759,13 +7759,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	var parseqs = __webpack_require__(33);
 	var inherit = __webpack_require__(34);
 	var yeast = __webpack_require__(35);
-	var debug = __webpack_require__(3)('engine.io-client:websocket');
+	var debug = __webpack_require__(3)("engine.io-client:websocket");
 	var BrowserWebSocket = global.WebSocket || global.MozWebSocket;
 	var NodeWebSocket;
-	if (typeof window === 'undefined') {
+	if (typeof window === "undefined") {
 	  try {
 	    NodeWebSocket = __webpack_require__(38);
-	  } catch (e) { }
+	  } catch (e) {}
 	}
 	
 	/**
@@ -7775,7 +7775,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	
 	var WebSocket = BrowserWebSocket;
-	if (!WebSocket && typeof window === 'undefined') {
+	if (!WebSocket && typeof window === "undefined") {
 	  WebSocket = NodeWebSocket;
 	}
 	
@@ -7792,8 +7792,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @api public
 	 */
 	
-	function WS (opts) {
-	  var forceBase64 = (opts && opts.forceBase64);
+	function WS(opts) {
+	  var forceBase64 = opts && opts.forceBase64;
 	  if (forceBase64) {
 	    this.supportsBinary = false;
 	  }
@@ -7818,7 +7818,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @api public
 	 */
 	
-	WS.prototype.name = 'websocket';
+	WS.prototype.name = "websocket";
 	
 	/*
 	 * WebSockets support binary
@@ -7841,18 +7841,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var uri = this.uri();
 	  var protocols = this.protocols;
 	  var opts = {
-	    agent: this.agent,
-	    perMessageDeflate: this.perMessageDeflate
+	    
 	  };
 	
 	  // SSL options for Node.js client
-	  opts.pfx = this.pfx;
-	  opts.key = this.key;
-	  opts.passphrase = this.passphrase;
-	  opts.cert = this.cert;
-	  opts.ca = this.ca;
-	  opts.ciphers = this.ciphers;
-	  opts.rejectUnauthorized = this.rejectUnauthorized;
+	  if (!this.isReactNative) {
+	    opts.agent = this.agent;
+	    opts.perMessageDeflate = this.perMessageDeflate;
+	    opts.pfx = this.pfx;
+	    opts.key = this.key;
+	    opts.passphrase = this.passphrase;
+	    opts.cert = this.cert;
+	    opts.ca = this.ca;
+	    opts.ciphers = this.ciphers;
+	    opts.rejectUnauthorized = this.rejectUnauthorized;
+	  }
 	  if (this.extraHeaders) {
 	    opts.headers = this.extraHeaders;
 	  }
@@ -7861,9 +7864,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  try {
-	    this.ws = this.usingBrowserWebSocket ? (protocols ? new WebSocket(uri, protocols) : new WebSocket(uri)) : new WebSocket(uri, protocols, opts);
+	    this.ws = this.usingBrowserWebSocket
+	      ? protocols
+	        ? new WebSocket(uri, protocols)
+	        : new WebSocket(uri)
+	      : new WebSocket(uri, protocols, opts);
 	  } catch (err) {
-	    return this.emit('error', err);
+	    return this.emit("error", err);
 	  }
 	
 	  if (this.ws.binaryType === undefined) {
@@ -7872,9 +7879,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  if (this.ws.supports && this.ws.supports.binary) {
 	    this.supportsBinary = true;
-	    this.ws.binaryType = 'nodebuffer';
+	    this.ws.binaryType = "nodebuffer";
 	  } else {
-	    this.ws.binaryType = 'arraybuffer';
+	    this.ws.binaryType = "arraybuffer";
 	  }
 	
 	  this.addEventListeners();
@@ -7899,7 +7906,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    self.onData(ev.data);
 	  };
 	  this.ws.onerror = function (e) {
-	    self.onError('websocket error', e);
+	    self.onError("websocket error", e);
 	  };
 	};
 	
@@ -7928,7 +7935,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	
 	          if (self.perMessageDeflate) {
-	            var len = 'string' === typeof data ? global.Buffer.byteLength(data) : data.length;
+	            var len =
+	              "string" === typeof data
+	                ? global.Buffer.byteLength(data)
+	                : data.length;
 	            if (len < self.perMessageDeflate.threshold) {
 	              opts.compress = false;
 	            }
@@ -7946,7 +7956,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            self.ws.send(data, opts);
 	          }
 	        } catch (e) {
-	          debug('websocket closed before onclose event');
+	          debug("websocket closed before onclose event");
 	        }
 	
 	        --total || done();
@@ -7954,14 +7964,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    })(packets[i]);
 	  }
 	
-	  function done () {
-	    self.emit('flush');
+	  function done() {
+	    self.emit("flush");
 	
 	    // fake drain
 	    // defer to next tick to allow Socket to clear writeBuffer
 	    setTimeout(function () {
 	      self.writable = true;
-	      self.emit('drain');
+	      self.emit("drain");
 	    }, 0);
 	  }
 	};
@@ -7983,7 +7993,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	
 	WS.prototype.doClose = function () {
-	  if (typeof this.ws !== 'undefined') {
+	  if (typeof this.ws !== "undefined") {
 	    this.ws.close();
 	  }
 	};
@@ -7996,13 +8006,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	WS.prototype.uri = function () {
 	  var query = this.query || {};
-	  var schema = this.secure ? 'wss' : 'ws';
-	  var port = '';
+	  var schema = this.secure ? "wss" : "ws";
+	  var port = "";
 	
 	  // avoid port if default for schema
-	  if (this.port && (('wss' === schema && Number(this.port) !== 443) ||
-	    ('ws' === schema && Number(this.port) !== 80))) {
-	    port = ':' + this.port;
+	  if (
+	    this.port &&
+	    (("wss" === schema && Number(this.port) !== 443) ||
+	      ("ws" === schema && Number(this.port) !== 80))
+	  ) {
+	    port = ":" + this.port;
 	  }
 	
 	  // append timestamp to URI
@@ -8019,11 +8032,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // prepend ? to query
 	  if (query.length) {
-	    query = '?' + query;
+	    query = "?" + query;
 	  }
 	
-	  var ipv6 = this.hostname.indexOf(':') !== -1;
-	  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
+	  var ipv6 = this.hostname.indexOf(":") !== -1;
+	  return (
+	    schema +
+	    "://" +
+	    (ipv6 ? "[" + this.hostname + "]" : this.hostname) +
+	    port +
+	    this.path +
+	    query
+	  );
 	};
 	
 	/**
@@ -8034,7 +8054,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	
 	WS.prototype.check = function () {
-	  return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
+	  return (
+	    !!WebSocket &&
+	    !("__initialize" in WebSocket && this.name === WS.prototype.name)
+	  );
 	};
 	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
